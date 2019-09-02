@@ -1,9 +1,12 @@
 package com.udacity.course3.reviews.controller;
 
+import com.udacity.course3.reviews.documents.CommentDoc;
+import com.udacity.course3.reviews.documents.ReviewDoc;
 import com.udacity.course3.reviews.entity.Comment;
 import com.udacity.course3.reviews.entity.Review;
 import com.udacity.course3.reviews.repositories.CommentRepository;
 import com.udacity.course3.reviews.repositories.ProductRepository;
+import com.udacity.course3.reviews.repositories.ReviewDocRepository;
 import com.udacity.course3.reviews.repositories.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,9 @@ public class CommentsController {
     private
     ProductRepository productRepository;
 
+    @Autowired
+    private ReviewDocRepository reviewDocRepository;
+
     /**
      * Creates a comment for a review.
      *
@@ -52,8 +58,18 @@ public class CommentsController {
         }
 
         comment.setReview(optionalReview.get());
+        commentRepository.save(comment);
 
-        return ResponseEntity.ok(commentRepository.save(comment));
+        Optional<ReviewDoc> optionalReviewDoc = reviewDocRepository.findById(reviewId);
+        if(!optionalReviewDoc.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ReviewDoc reviewDoc = optionalReviewDoc.get();
+        reviewDoc.addCommentDocs(new CommentDoc(comment));
+        reviewDocRepository.save(reviewDoc);
+
+        return ResponseEntity.ok().build();
     }
 
     /**

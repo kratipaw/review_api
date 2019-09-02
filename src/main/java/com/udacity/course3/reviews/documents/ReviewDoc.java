@@ -15,7 +15,7 @@ public class ReviewDoc {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Integer id;
 
     private String reviewTitle;
 
@@ -29,13 +29,13 @@ public class ReviewDoc {
 
     public ReviewDoc(Review review){
 
-        this.id = Integer.toString(review.getId());
+        this.id = review.getId();
         this.reviewTitle = review.getReviewTitle();
         this.product = review.getProduct();
         this.commentDocs = new ArrayList<>();
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 

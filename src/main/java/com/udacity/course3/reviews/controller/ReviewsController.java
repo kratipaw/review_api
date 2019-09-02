@@ -1,8 +1,10 @@
 package com.udacity.course3.reviews.controller;
 
+import com.udacity.course3.reviews.documents.ReviewDoc;
 import com.udacity.course3.reviews.entity.Product;
 import com.udacity.course3.reviews.entity.Review;
 import com.udacity.course3.reviews.repositories.ProductRepository;
+import com.udacity.course3.reviews.repositories.ReviewDocRepository;
 import com.udacity.course3.reviews.repositories.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,9 @@ public class ReviewsController {
     private
     ProductRepository productRepository;
 
+    @Autowired
+    private ReviewDocRepository reviewDocRepository;
+
     /**
      * Creates a review for a product.
      * <p>
@@ -47,9 +52,15 @@ public class ReviewsController {
         if (!optionalProduct.isPresent())
             return ResponseEntity.notFound().build();
 
+        //Save to MySQL via JPARepo
         review.setProduct(optionalProduct.get());
+        reviewRepository.save(review);
 
-        return ResponseEntity.ok(reviewRepository.save(review));
+        //Save to MongoDB via MngoRepo
+        ReviewDoc reviewDoc = new ReviewDoc(review);
+        reviewDocRepository.save(reviewDoc);
+
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -65,6 +76,10 @@ public class ReviewsController {
         if (!optionalProduct.isPresent())
             return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok(reviewRepository.findAllByProductId(productId));
+        List<Integer> reviewIds = reviewRepository.findIdByProductId(productId);
+
+        List<ReviewDoc> reviews = (List<ReviewDoc>) reviewDocRepository.findAllById(reviewIds);
+
+        return ResponseEntity.ok(reviews);
     }
 }
