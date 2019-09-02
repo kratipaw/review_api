@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.EntityManager;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -26,11 +27,8 @@ public class ReviewRepositoryTest {
 
     @Test
     public void testFindReviewsByProductId() {
-        Product product = new Product();
-        product.setProductName("Product_title");
 
-        entityManager.persist(product);
-        entityManager.flush();
+        Product product = getProduct();
 
         Review review = new Review();
         review.setReviewTitle("Review_title");
@@ -39,9 +37,45 @@ public class ReviewRepositoryTest {
         entityManager.persist(review);
         entityManager.flush();
 
-        List<Review> reviews = reviewRepository.findAllByProductId(product.getId());
+        List<Review> reviews = reviewRepository.findAllByProductId(review.getProduct().getId());
         assertNotNull(reviews);
         assertEquals(review.getReviewTitle(), reviews.get(0).getReviewTitle());
+    }
+
+    private Product getProduct(){
+
+        Product product = new Product();
+        product.setProductName("Product_title");
+
+        entityManager.persist(product);
+        entityManager.flush();
+
+        return product;
+    }
+
+    @Test
+    public void testFindReviewIdsByProductIds(){
+
+        Product product = getProduct();
+
+        Review review = new Review();
+        review.setReviewTitle("Review_title");
+        review.setProduct(product);
+
+        entityManager.persist(review);
+        entityManager.flush();
+
+        Review review_2 = new Review();
+        review_2.setReviewTitle("Review_Title_2");
+        review_2.setProduct(product);
+
+        this.entityManager.persist(review_2);
+        this.entityManager.flush();
+
+        List<Integer> reviewIds = reviewRepository.findIdByProductId(product.getId());
+
+        assertNotNull(reviewIds);
+        assertTrue(reviewIds.containsAll(Arrays.asList(review.getId(), review_2.getId())));
     }
 
 }
